@@ -18,24 +18,26 @@ Y_train = data_train[0]
 X_train = data_train[1: n]
 
 def init_params():
-  W1 = np.random.rand(10, 784)
-  b1 = np.random.rand(10, 1)
-  W2 = np.random.rand(10, 10)
-  b2 = np.random.rand(10, 1)
+  W1 = np.random.randn(10, 784) * np.sqrt(2./784) 
+  b1 = np.zeros((10, 1))  
+  W2 = np.random.randn(10, 10) * np.sqrt(2./10)
+  b2 = np.zeros((10, 1)) 
   return W1, b1, W2, b2
 
 def ReLU(Z):
-  return p.maximum(0, Z)
+  return np.maximum(0, Z)
 
 def ReLU_deriv(Z):
     return Z > 0
 
 def softmax(Z):
-  return np.exp(Z) / np.sum(np.exp(Z))
+  Z_max = np.max(Z, axis=0, keepdims=True)
+  shifted_Z = Z - Z_max
+  return np.exp(shifted_Z) / np.sum(np.exp(shifted_Z), axis=0, keepdims=True)
 
 def one_hot(Y):
   one_hot_Y = np.zeros((Y.size, Y.max() + 1))
-  one_hot_Y[np.arrange(Y.size, Y )] = 1
+  one_hot_Y[np.arange(Y.size), Y] = 1
   one_hot_Y = one_hot_Y.T
   return one_hot_Y
 
@@ -62,3 +64,27 @@ def update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha):
   W2 = W2 - alpha * dW2  
   b2 = b2 - alpha * db2    
   return W1, b1, W2, b2
+
+def get_predictions(A2):
+  return np.argmax(A2, 0)
+
+def get_accuracy(predictions, Y):
+  print(predictions, Y)
+  return np.sum(predictions == Y) / Y.size
+
+def gradient_descent(X, Y, alpha, iterations):
+  W1, b1, W2, b2 = init_params()
+  for i in range(iterations):
+      Z1, A1, Z2, A2 = forward_prop(W1, b1, W2, b2, X)
+      dW1, db1, dW2, db2 = backward_prop(Z1, A1, Z2, A2, W1, W2, X, Y)
+      W1, b1, W2, b2 = update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha)
+      if i % 10 == 0:
+          print("Iteration: ", i)
+          predictions = get_predictions(A2)
+          print(get_accuracy(predictions, Y))
+  return W1, b1, W2, b2
+
+X_train = X_train / 255.0
+X_dev = X_dev / 255.0 
+
+W1, b1, W2, b2 = gradient_descent(X_train, Y_train, 0.01, 100)
