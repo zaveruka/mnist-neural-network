@@ -184,3 +184,40 @@ X_train = X_train / 255.0
 X_dev = X_dev / 255.0 
 ```
 This operation scales the pixel values of your images to a range between 0 and 1. This improves learning rates and model stability
+
+#### Make prediction
+
+```
+def make_predictions(X, W1, b1, W2, b2):
+    _, _, _, A2 = forward_prop(W1, b1, W2, b2, X)
+    predictions = get_predictions(A2)
+    return predictions
+```
+This function takes an input image X aswell as the trained parameters W1, b1, W2, b2 to generate a prediction
+
+#### Test Prediction
+```
+def test_prediction(index, W1, b1, W2, b2):
+    current_image = X_train[:, index, None]
+    prediction = make_predictions(X_train[:, index, None], W1, b1, W2, b2)
+    label = Y_train[index]
+    print("Prediction: ", prediction)
+    print("Label: ", label)
+    
+    current_image = current_image.reshape((28, 28)) * 255
+    plt.gray()
+    plt.imshow(current_image, interpolation='nearest')
+    plt.show()
+
+```
+This function visualizes a MNIST image from the training set(X_train) and displays the predicted and actual labels
+
+1. The current image is extracted using the slicing method(X_train[:, index, None]), which here is extracting a single column from the data, which represent a single image
+
+2. The predictions come from the make_predictions function
+
+3. The true label(label) is retrieved from the training labels(Y_train)
+
+4. The current image is once again altered. MNIST images are usually stored as flattened arrays(728 elements from a 28x28 image). utilizing the reshape method makes the image return to its original 28x28 format and multiples by 255 to scale each pixel value back to their original grey scale value
+
+5. At the end, the original restored image is displayed using matplotlib(plt)
